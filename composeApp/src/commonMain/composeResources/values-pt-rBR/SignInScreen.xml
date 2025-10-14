@@ -1,0 +1,33 @@
+<resources>
+    <string name="signIn_title">
+        Cadastro
+    </string>
+
+    <string name="signIn_name_and_lastName">
+        Nome e sobrenome
+    </string>
+
+    <string name="signIn_confirmPassword">
+        Confirmar senha
+    </string>
+
+    <string name="signIn_signIn">
+        Cadastrar
+    </string>
+
+    <string name="signin_warning_password_level">
+        Deve conter pelo menos: Uma letra maiúscula, uma letra minúscula, um número e um caractere especial
+    </string>
+
+    <string name="signin_warning_password_level_strong">
+        Senha forte!
+    </string>
+
+    <string name="signin_warning_password_level_weak">
+        Senha fraca!
+    </string>
+
+    <string name="signin_incorrectData">
+        Preencha os dados corretamente.
+    </string>
+</resources>

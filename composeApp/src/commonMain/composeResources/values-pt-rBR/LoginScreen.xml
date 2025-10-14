@@ -1,0 +1,21 @@
+<resources>
+    <string name="title_login">
+        Entrar
+    </string>
+
+    <string name="user_textField_placeholder_login">
+        Email
+    </string>
+
+    <string name="pass_textField_placeholder_login">
+        Senha
+    </string>
+
+    <string name="loginScreen_create_account">
+        Não tem uma conta?
+    </string>
+
+    <string name="loginScreen_page_create_account">
+        Crie
+    </string>
+</resources>

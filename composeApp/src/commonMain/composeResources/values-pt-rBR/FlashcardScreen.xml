@@ -1,0 +1,9 @@
+<resources>
+    <string name="btn_see_result">
+        Ver Resultado
+    </string>
+
+    <string name="btn_next">
+        Próximo
+    </string>
+</resources>

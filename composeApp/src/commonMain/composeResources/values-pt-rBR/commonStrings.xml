@@ -1,0 +1,17 @@
+<resources>
+    <string name="commonTopicsScreenLabel">
+        Tópicos
+    </string>
+
+    <string name="commonGenerationFlashcardsScreenLabel">
+        Criar Flashcards
+    </string>
+
+    <string name="commonReviewFlashcardsScreenLabel">
+        Revisão de Flashcard
+    </string>
+
+    <string name="common_SomethingWentWrong">
+        Algo deu errado. :(
+    </string>
+</resources>
