@@ -11,7 +11,7 @@ Below are the main supported and planned use cases for the API. Each link will l
 *   **Core Authentication**
     *   [UC-01: Register with Email and Password](./use-cases/01-register-with-email-and-password.md)
     *   *UC-02: Login with Email and Password (coming soon)*
-    *   *UC-03: Login with Google (coming soon)*
+    *   [UC-03: Login and Register with Google](./use-cases/03-login-with-google.md)
     *   *UC-04: Refresh Access Token (coming soon)*
 
 *   **Provider Expansion**
