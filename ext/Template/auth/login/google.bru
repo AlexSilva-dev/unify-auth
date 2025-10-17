@@ -5,7 +5,15 @@ meta {
 }
 
 post {
-  url: {{protocol}}{{domain}}/auth/login/google
-  body: none
+  url: {{protocol}}{{domain}}/api/auth/login/google
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "idToken": null,
+    "authorizationCode": "4/0AVGzR1DuMCI1nLyR-hgWMPpts78Ud07j_wjbR827MdnAUdl2vD4PjJJQLy45k2_OIJ9vIw",
+    "redirectUri": "https://developers.google.com/oauthplayground"
+  }
 }

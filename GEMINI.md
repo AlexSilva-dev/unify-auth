@@ -7,16 +7,24 @@ de código sigam os padrões de arquitetura estabelecidos neste projeto.
 
 O projeto é um aplicativo Kotlin Multiplatform (KMP) com uma estrutura de monólito modular.
 
-- **`featuresServer/`**: Este **não** é um módulo, mas um **diretório** que agrupa os módulos de feature do backend.
-  Cada submódulo aqui (ex: `featuresServer/authentication`, `featuresServer/user`) representa uma capacidade de negócio
-  vertical e autônoma.
-- **`:server`**: O backend da aplicação, escrito em Ktor. Ele atua como o **orquestrador**, integrando os diversos
-  módulos de feature contidos em `featuresServer/` e expondo a API pública.
-- **`:shared`**: Contém lógica e modelos de dados (ex: DTOs) que são compartilhados entre **todos** os alvos, incluindo
-  os módulos de `featuresServer/` e o `:composeApp`.
-- **`:composeApp`**: Contém a **lógica de negócio do cliente** (UseCases, Repositories) e toda a **camada de UI** (
-  Telas, ViewModels). A lógica aqui é compartilhada entre todos os alvos de front-end (Android, iOS, Desktop, Wasm), mas
-  não é usada pelo `:server`.
+- **`featuresServer/`**: Diretório que agrupa os módulos de feature do backend. Cada submódulo (ex:
+  `featuresServer/authentication`) é autônomo e deve conter sua própria lógica de negócio, incluindo **UseCases,
+  Repositórios e acesso ao banco de dados que são específicos do servidor**.
+
+- **`:server`**: O backend da aplicação (Ktor). Atua como o **orquestrador**, integrando os módulos de `featuresServer/`
+  e expondo a API pública.
+
+- **`:shared`**: Contém código **universal**, compartilhado entre o cliente (`:composeApp`) e o servidor.
+  **Atenção:** Este módulo deve conter apenas o que for genuinamente comum a todos os alvos, como:
+    - Modelos de Entidade e DTOs.
+    - Interfaces de Repositório (se usadas por ambos os lados).
+    - Lógica de validação/formatação universal (funções puras).
+      **NÃO COLOQUE AQUI:** Qualquer código que só faça sentido ou para o back end ou para todos ou um alvo do front
+      end/clientes. O código nesse módulo deve fazer sentido para todos os alvos ao mesmo tempo.
+
+- **`:composeApp`**: Contém a **lógica de negócio específica do cliente** (UseCases, Repositories, DataSources que
+  consomem a API) e toda a **camada de UI** (Telas, ViewModels). A lógica aqui não é usada pelo `:server`.
+
 - **`:iosApp`**: O host da aplicação para a plataforma iOS.
 
 ## 2. Arquitetura de Camadas (Clean Architecture)
@@ -94,16 +102,23 @@ o código, as tarefas e a documentação sempre sincronizados.
 
 ### Nível de Detalhe das Tarefas
 
-- **Seja Técnico e Específico:** Ao detalhar uma tarefa técnica (especialmente uma subtarefa), não hesite em adicionar um nível maior de detalhe para guiar a implementação. O objetivo é que um desenvolvedor tenha um guia claro, mas sem restringir sua liberdade de como implementar.
+- **Seja Técnico e Específico:** Ao detalhar uma tarefa técnica (especialmente uma subtarefa), não hesite em adicionar
+  um nível maior de detalhe para guiar a implementação. O objetivo é que um desenvolvedor tenha um guia claro, mas sem
+  restringir sua liberdade de como implementar.
 - **O que incluir:**
-  - **Pseudocódigo:** Para lógicas complexas ou algoritmos.
-  - **Estrutura de Dados:** Descreva o formato de DTOs ou objetos esperados. Exemplo: `A rota POST /api/exemplo deve esperar um DTO com a seguinte estrutura: data class ExemploDto(val id: String, val valor: Int)`.
-  - **Passo a Passo:** Detalhe os passos que um caso de uso ou método deve seguir, como as validações, chamadas a repositórios e o objeto de retorno.
+    - **Pseudocódigo:** Para lógicas complexas ou algoritmos.
+    - **Estrutura de Dados:** Descreva o formato de DTOs ou objetos esperados. Exemplo:
+      `A rota POST /api/exemplo deve esperar um DTO com a seguinte estrutura: data class ExemploDto(val id: String, val valor: Int)`.
+    - **Passo a Passo:** Detalhe os passos que um caso de uso ou método deve seguir, como as validações, chamadas a
+      repositórios e o objeto de retorno.
 
 ### Como Encontrar Tarefas Relacionadas (Subtarefas)
 
-- **Não Confie Apenas na Busca por Título:** Uma busca pelo título exato pode não encontrar tarefas, especialmente se elas forem subtarefas com títulos mais técnicos ou diferentes.
-- **Use a Busca Avançada para Subtarefas:** A maneira mais eficaz de encontrar subtarefas é usar a ferramenta `advanced_search` com a query `Subtask of: <ID_DA_TAREFA_PAI>`. Isso listará todas as subtarefas diretas de uma tarefa principal.
+- **Não Confie Apenas na Busca por Título:** Uma busca pelo título exato pode não encontrar tarefas, especialmente se
+  elas forem subtarefas com títulos mais técnicos ou diferentes.
+- **Use a Busca Avançada para Subtarefas:** A maneira mais eficaz de encontrar subtarefas é usar a ferramenta
+  `advanced_search` com a query `Subtask of: <ID_DA_TAREFA_PAI>`. Isso listará todas as subtarefas diretas de uma tarefa
+  principal.
 
 ### Ciclo de Vida de Novas Ideias e Features
 
@@ -129,9 +144,12 @@ ser seguido:
 
 ## 7. Interação com Ferramentas (Tool Interaction)
 
-- **Parâmetros como JSON:** Ao usar ferramentas que interagem com APIs externas (como o YouTrack), se um parâmetro como `kwargs` for do tipo `string`, ele pode estar esperando um **objeto JSON válido** como valor.
-  - **Exemplo:** Em vez de passar `issue_id="ID", description="texto"`, o correto é `{"issue_id": "ID", "description": "texto"}`.
-  - **Caracteres Especiais:** Dentro da string de descrição no JSON, caracteres especiais como quebras de linha devem ser escapados (ex: `\n`), e aspas duplas devem ser escapadas (ex: `\"`). A formatação correta é crucial.
+- **Parâmetros como JSON:** Ao usar ferramentas que interagem com APIs externas (como o YouTrack), se um parâmetro como
+  `kwargs` for do tipo `string`, ele pode estar esperando um **objeto JSON válido** como valor.
+    - **Exemplo:** Em vez de passar `issue_id="ID", description="texto"`, o correto é
+      `{"issue_id": "ID", "description": "texto"}`.
+    - **Caracteres Especiais:** Dentro da string de descrição no JSON, caracteres especiais como quebras de linha devem
+      ser escapados (ex: `\n`), e aspas duplas devem ser escapadas (ex: `\"`). A formatação correta é crucial.
 
 ## Instrução para comunicação comigo:
 

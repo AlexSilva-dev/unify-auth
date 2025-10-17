@@ -1,18 +1,18 @@
 package com.example.template.authentication.infrastructure.dataSources.remote
 
-import com.example.template.authentication.GOOGLE_CLIENT_ID
-import com.example.template.authentication.GOOGLE_KEY_SECRET
+import com.example.template.app.domain.entities.Failure
+import com.example.template.app.domain.entities.Result
 import com.example.template.authentication.domain.entities.AuthenticationCredentialsProvider
 import com.example.template.authentication.domain.entities.AuthorizationCode
 import com.example.template.authentication.domain.entities.UserInfo
 import com.example.template.authentication.infrastructure.dataSources.GoogleAuthenticationDataSource
+import com.example.template.authentication.utils.GOOGLE_CLIENT_ID
+import com.example.template.authentication.utils.GOOGLE_KEY_SECRET
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 
 class GoogleAuthenticationDataSourceImpl(
@@ -43,41 +43,25 @@ class GoogleAuthenticationDataSourceImpl(
     }
 
 
-    // A função agora recebe o CÓDIGO, não o token
-    override suspend fun buildUserInfoByAuthorizationCode(authorizationCode: AuthorizationCode): UserInfo? {
-        return withContext(Dispatchers.IO) { // Mover operações de rede para o dispatcher de I/O
-            try {
-                val tokenResponse = GoogleAuthorizationCodeTokenRequest(
-                    /* transport = */ NetHttpTransport(),
-                    /* jsonFactory = */ GsonFactory.getDefaultInstance(),
-                    /* tokenServerEncodedUrl = */ "https://oauth2.googleapis.com/token",
-                    /* clientId = */ googleClientId,
-                    /* clientSecret = */ googleClientSecret, // O segredo do seu cliente web
-                    /* code = */ authorizationCode.token,
-                    /* redirectUri = */ authorizationCode.url,
-                ).execute()
+    override suspend fun getIdTokenByAuthorizationCode(authorizationCode: AuthorizationCode): Result<String, Failure> {
+        try {
+            val tokenResponse = GoogleAuthorizationCodeTokenRequest(
+                /* transport = */ NetHttpTransport(),
+                /* jsonFactory = */ GsonFactory.getDefaultInstance(),
+                /* tokenServerEncodedUrl = */ "https://oauth2.googleapis.com/token",
+                /* clientId = */ googleClientId,
+                /* clientSecret = */ googleClientSecret, // O segredo do seu cliente web
+                /* code = */ authorizationCode.authorizationCode,
+                /* redirectUri = */ authorizationCode.url,
+            ).execute()
 
-                val idTokenString = tokenResponse.idToken
+            val idTokenString = tokenResponse.idToken
+            return Result.Success(idTokenString)
 
-                val idToken: GoogleIdToken? = this@GoogleAuthenticationDataSourceImpl.verifier.verify(idTokenString)
-
-                if (idToken != null) {
-                    val payload = idToken.payload
-                    UserInfo(
-                        providerId = payload.subject,
-                        name = payload["name"] as? String ?: "",
-                        email = payload.email,
-                        profilePictureUrl = payload["picture"] as? String,
-                        provider = AuthenticationCredentialsProvider.GOOGLE,
-                    )
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                println("Falha no fluxo de autenticação do Google: ${e.message}")
-                println(e.cause)
-                null
-            }
+        } catch (e: Exception) {
+            println("Falha no fluxo de autenticação do Google: ${e.message}")
+            println(e.cause)
+            return Result.Failure(Failure.UnknownError(e))
         }
     }
 

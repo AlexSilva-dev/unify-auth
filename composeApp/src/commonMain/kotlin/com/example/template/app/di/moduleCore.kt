@@ -20,27 +20,11 @@ import com.example.template.authentication.infrastructure.repositories.GoogleAut
 import com.example.template.authentication.infrastructure.repositories.SingUpRepositoryImpl
 import com.example.template.authentication.infrastructure.repositories.TokenProvider
 import com.example.template.authentication.infrastructure.repositories.TokenProviderImpl
-import com.example.template.quiz.domain.ports.QuizRepository
-import com.example.template.quiz.domain.ports.TopicRepository
-import com.example.template.quiz.domain.useCases.AiGenerateQuizzesUseCase
-import com.example.template.quiz.domain.useCases.GetAllTopicsUseCase
-import com.example.template.quiz.domain.useCases.GetQuizUseCaseImpl
-import com.example.template.quiz.domain.useCases.GetQuizzesByTopicUseCaseImpl
-import com.example.template.quiz.domain.useCases.interfaces.GetAllTopicsUseCaseCommon
-import com.example.template.quiz.domain.useCases.interfaces.GetQuizUseCaseCommon
-import com.example.template.quiz.domain.useCases.interfaces.GetQuizzesByTopicUseCaseCommon
-import com.example.template.quiz.infrastructure.repositories.QuizRepositoryCommonImpl
-import com.example.template.quiz.infrastructure.repositories.TopicRepositoryCommonImpl
-import com.example.template.quiz.infrastructure.dataSources.QuizDataSourceCommon
-import com.example.template.quiz.infrastructure.dataSources.remote.QuizRemoteDataSourceImpl
-import com.example.template.quiz.infrastructure.dataSources.TopicDataSourceCommon
-import com.example.template.quiz.infrastructure.dataSources.remote.TopicRemoteDataSourceImpl
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.client.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
@@ -50,15 +34,16 @@ object HttpClients {
     val Authenticated = named("AuthenticatedHttpClient")
     val Public = named("RefreshTokenHttpClient")
 }
+
 val moduleCore: Module = module {
     factory<HttpClient>(HttpClients.Authenticated) {
-        HttpClient  {
+        HttpClient {
             install(ContentNegotiation) {
                 json(
                     Json {
-                    prettyPrint = true // Formata o JSON para ser mais legível no log
-                    ignoreUnknownKeys = true // Ignora campos JSON que não estão nas suas data classes
-                })
+                        prettyPrint = true // Formata o JSON para ser mais legível no log
+                        ignoreUnknownKeys = true // Ignora campos JSON que não estão nas suas data classes
+                    })
             }
             install(Auth) {
                 bearer {
@@ -100,7 +85,7 @@ val moduleCore: Module = module {
     }
 
     factory<HttpClient>(HttpClients.Public) {
-        HttpClient  {
+        HttpClient {
             install(ContentNegotiation) {
                 json(
                     Json {
@@ -110,33 +95,6 @@ val moduleCore: Module = module {
                 )
             }
         }
-    }
-
-    single<QuizDataSourceCommon> {
-        QuizRemoteDataSourceImpl(
-            client = get(HttpClients.Authenticated),
-        )
-    }
-
-    single<QuizRepository> { QuizRepositoryCommonImpl(quizDataSource = get()) }
-
-    factory<TopicDataSourceCommon> {
-        TopicRemoteDataSourceImpl(
-            client = get(HttpClients.Authenticated),
-        )
-    }
-
-    single<TopicRepository> {
-        TopicRepositoryCommonImpl(
-            topicDataSourceCommon = get()
-        )
-    }
-
-    single {
-        AiGenerateQuizzesUseCase(
-            quizRepository = get(),
-            topicRepository = get()
-        )
     }
 
     single {
@@ -166,25 +124,6 @@ val moduleCore: Module = module {
             createSettingsLibrary = get()
         )
     }
-
-    single<GetAllTopicsUseCaseCommon> {
-        GetAllTopicsUseCase(
-            topicRepository = get()
-        )
-    }
-
-    single<GetQuizUseCaseCommon> {
-        GetQuizUseCaseImpl(
-            quizRepository = get()
-        )
-    }
-
-    single<GetQuizzesByTopicUseCaseCommon> {
-        GetQuizzesByTopicUseCaseImpl(
-            quizRepository = get()
-        )
-    }
-
     single<GoogleAuthenticateUseCaseCommon> {
         GoogleAuthenticateUseCase(
             googleAuthRepository = get(),

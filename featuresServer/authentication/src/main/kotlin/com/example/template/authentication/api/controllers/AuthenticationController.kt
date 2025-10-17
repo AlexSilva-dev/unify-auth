@@ -5,26 +5,24 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.template.app.domain.entities.Failure
 import com.example.template.app.domain.entities.Result
-import com.example.template.authentication.JWT_AUDIENCE
-import com.example.template.authentication.JWT_ISSUER
-import com.example.template.authentication.JWT_SECRET
-import com.example.template.authentication.api.dtos.AuthorizationCodeDto
+import com.example.template.authentication.api.dtos.GoogleProviderRequestDto
 import com.example.template.authentication.api.dtos.SignUpDataDto
-import com.example.template.authentication.api.dtos.TokenDto
 import com.example.template.authentication.api.dtos.mappers.toDomain
 import com.example.template.authentication.api.dtos.mappers.toDto
-import com.example.template.authentication.domain.useCases.RefreshTokenUseCase
 import com.example.template.authentication.domain.entities.AuthenticationWithGoogleUseCaseResult
+import com.example.template.authentication.domain.useCases.RefreshTokenUseCase
 import com.example.template.authentication.domain.useCases.RefreshTokenUseCaseResult
 import com.example.template.authentication.domain.useCases.SignUpUseCase
 import com.example.template.authentication.domain.useCases.interfaces.AuthenticationWithGoogleUseCase
+import com.example.template.authentication.utils.JWT_AUDIENCE
+import com.example.template.authentication.utils.JWT_ISSUER
+import com.example.template.authentication.utils.JWT_SECRET
 import com.example.template.user.api.dtos.mappers.toDto
 import com.example.template.user.domain.entities.User
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondNullable
-import io.ktor.server.routing.RoutingCall
+import io.ktor.http.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 class AuthenticationController(
     private val authenticationWithGoogleUseCase: AuthenticationWithGoogleUseCase,
@@ -33,15 +31,19 @@ class AuthenticationController(
 ) {
     suspend fun tokenAuthenticationWithGoogle(call: RoutingCall) {
 
-        val tokenReceive: TokenDto = call.receive<TokenDto>()
-        if (tokenReceive.token.isEmpty()) {
+        val googleProviderRequestDto: GoogleProviderRequestDto = call.receive<GoogleProviderRequestDto>()
+        if (
+            googleProviderRequestDto.idToken.isNullOrEmpty()
+            && (googleProviderRequestDto.redirectUri.isNullOrEmpty() && googleProviderRequestDto.authorizationCode.isNullOrEmpty())
+        ) {
             call.respondNullable(
                 status = HttpStatusCode.BadRequest,
-                message = "Invalid token"
+                message = "Invalid request"
             )
+            return
         }
-        val result = this.authenticationWithGoogleUseCase.execute(
-            token = tokenReceive.token
+        val result: AuthenticationWithGoogleUseCaseResult = this.authenticationWithGoogleUseCase.execute(
+            googleProviderRequest = googleProviderRequestDto.toDomain()
         )
 
         when (result) {
@@ -66,48 +68,17 @@ class AuthenticationController(
                 )
             }
 
-            is AuthenticationWithGoogleUseCaseResult.Success -> {
-                call.respondNullable(
-                    status = HttpStatusCode.OK,
-                    message = result.userSession.toDto()
-                )
-            }
-        }
-
-    }
-
-    suspend fun codeAuthenticationWithGoogle(call: RoutingCall) {
-
-        val authorizationCodeDto: AuthorizationCodeDto = call.receive<AuthorizationCodeDto>()
-        if (authorizationCodeDto.token.isEmpty() || authorizationCodeDto.redirectUrl.isEmpty()) {
-            call.respondNullable(
-                status = HttpStatusCode.BadRequest,
-                message = "Invalid"
-            )
-        }
-        val result = this.authenticationWithGoogleUseCase.execute(
-            authorizationCode = authorizationCodeDto.toDomain()
-        )
-
-        when (result) {
-            is AuthenticationWithGoogleUseCaseResult.InvalidToken -> {
+            is AuthenticationWithGoogleUseCaseResult.InvalidRedirectUrl -> {
                 call.respondNullable(
                     status = HttpStatusCode.BadRequest,
-                    message = "Invalid token"
+                    message = "Invalid redirect url"
                 )
             }
 
-            is AuthenticationWithGoogleUseCaseResult.UnknownError -> {
+            is AuthenticationWithGoogleUseCaseResult.GoogleUserNotFound -> {
                 call.respondNullable(
-                    status = HttpStatusCode.InternalServerError,
-                    message = "Unknown error"
-                )
-            }
-
-            is AuthenticationWithGoogleUseCaseResult.UserNotRegistered -> {
-                call.respondNullable(
-                    status = HttpStatusCode.Created,
-                    message = result.userSession.toDto()
+                    status = HttpStatusCode.BadRequest,
+                    message = "Google user not found"
                 )
             }
 
@@ -120,6 +91,8 @@ class AuthenticationController(
         }
 
     }
+
+
     suspend fun refreshToken(call: RoutingCall) {
         val tokenReceive: String? = call.request.headers["refresh_token"]
 
@@ -151,13 +124,14 @@ class AuthenticationController(
             val refreshTokenUseCaseResult = this.refreshTokenUseCase.execute(
                 refreshToken = jwtVerifier.token
             )
-            when(refreshTokenUseCaseResult) {
+            when (refreshTokenUseCaseResult) {
                 RefreshTokenUseCaseResult.InvalidRefreshToken -> {
                     call.respond(
                         status = HttpStatusCode.Unauthorized,
                         message = "Invalid token"
                     )
                 }
+
                 is RefreshTokenUseCaseResult.InternalError -> {
                     call.respond(
                         status = HttpStatusCode.InternalServerError,

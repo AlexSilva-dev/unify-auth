@@ -13,5 +13,5 @@ interface AuthenticationRepository {
     suspend fun createUserSession(userId: String): UserSession
     suspend fun findUserSessionByUserId(userId: String): UserSession?
     suspend fun findByRefreshToken(refreshToken: String): Result<UserSession?>
-    suspend fun googleAuthorizationCodeVerify(authorizationCode: AuthorizationCode): UserInfo?
+    suspend fun googleAuthorizationCodeVerify(authorizationCode: AuthorizationCode): com.example.template.app.domain.entities.Result<String, Failure>
 }

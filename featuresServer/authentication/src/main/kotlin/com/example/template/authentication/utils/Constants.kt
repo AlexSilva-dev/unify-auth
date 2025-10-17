@@ -1,12 +1,9 @@
-package com.example.template.authentication
+package com.example.template.authentication.utils
 
-import io.github.cdimascio.dotenv.Dotenv
+import io.github.cdimascio.dotenv.dotenv
 
 
-var dotenv = Dotenv.configure()
-    .directory("./server")
-    .ignoreIfMalformed()
-    .load()
+var dotenv = dotenv()
 
 val GOOGLE_CLIENT_ID: String = dotenv["GOOGLE_CLIENT_ID"]
 val GOOGLE_KEY_SECRET: String = dotenv["GOOGLE_KEY_SECRET"]

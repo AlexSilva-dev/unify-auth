@@ -5,21 +5,16 @@ import com.example.template.app.utils.SERVER_HOST
 import com.example.template.app.utils.SERVER_PORT
 import com.example.template.app.utils.SERVER_PROTOCOL
 import com.example.template.authentication.api.dtos.AuthorizationCodeDto
-import com.example.template.authentication.api.dtos.TokenDto
+import com.example.template.authentication.api.dtos.GoogleProviderRequestDto
 import com.example.template.authentication.api.dtos.UserSessionDto
 import com.example.template.authentication.api.dtos.mappers.toDomain
 import com.example.template.authentication.domain.entities.UserSession
 import com.example.template.authentication.infrastructure.dataSources.GoogleAuthDataSourceCommon
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.URLProtocol
-import io.ktor.http.contentType
-import io.ktor.http.path
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 
 class GoogleAuthDataSourceRemote(
     private val client: HttpClient,
@@ -27,9 +22,9 @@ class GoogleAuthDataSourceRemote(
     private val host: String = SERVER_HOST,
     private val port: Int = SERVER_PORT,
     private val protocol: String = SERVER_PROTOCOL
-): GoogleAuthDataSourceCommon {
+) : GoogleAuthDataSourceCommon {
     override suspend fun googleAuthenticationByToken(token: String): UserSession {
-         val httpResponse: HttpResponse = this.unauthenticatedClient.post {
+        val httpResponse: HttpResponse = this.unauthenticatedClient.post {
             url {
                 protocol = if (this@GoogleAuthDataSourceRemote.protocol == "http") {
                     URLProtocol.HTTP
@@ -42,12 +37,12 @@ class GoogleAuthDataSourceRemote(
             }
             contentType(type = ContentType.Application.Json)
             setBody(
-                TokenDto(
-                    token = token
+                GoogleProviderRequestDto(
+                    idToken = token
                 )
             )
         }
-        val userSession: UserSessionDto =  httpResponse.body()
+        val userSession: UserSessionDto = httpResponse.body()
         return userSession.toDomain()
     }
 
@@ -70,7 +65,7 @@ class GoogleAuthDataSourceRemote(
                 authorizationCodeDto
             )
         }
-        val userSession: UserSessionDto =  httpResponse.body()
+        val userSession: UserSessionDto = httpResponse.body()
         return userSession.toDomain()
     }
 
@@ -97,7 +92,7 @@ class GoogleAuthDataSourceRemote(
         if (httpResponse.status == HttpStatusCode.Unauthorized) {
             throw AuthenticationRequiredException()
         }
-        val userSession: UserSessionDto =  httpResponse.body()
+        val userSession: UserSessionDto = httpResponse.body()
         return userSession.toDomain()
     }
 

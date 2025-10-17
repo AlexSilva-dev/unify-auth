@@ -6,19 +6,19 @@ import com.example.template.authentication.domain.entities.Credential
 import com.example.template.authentication.domain.entities.UserInfo
 import com.example.template.authentication.domain.entities.UserSession
 import com.example.template.authentication.domain.ports.AuthenticationRepository
-import com.example.template.authentication.infrastructure.dataSources.JwtDataSource
 import com.example.template.authentication.infrastructure.dataSources.GoogleAuthenticationDataSource
+import com.example.template.authentication.infrastructure.dataSources.JwtDataSource
 import com.example.template.authentication.infrastructure.dataSources.local.CredentialsDao
 import com.example.template.authentication.infrastructure.dataSources.local.UserSessionDao
 import com.example.template.authentication.infrastructure.dataSources.local.mappers.toDomain
 import com.example.template.authentication.infrastructure.database.tables.CredentialsTable
 import com.example.template.authentication.infrastructure.database.tables.UserSessionsTable
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import java.time.ZoneOffset
+import java.util.*
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
-import java.time.ZoneOffset
-import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
@@ -33,8 +33,8 @@ class AuthenticationRepositoryImpl(
         )
     }
 
-    override suspend fun googleAuthorizationCodeVerify(authorizationCode: AuthorizationCode): UserInfo? {
-        return this.googleAuthenticationDataSource.buildUserInfoByAuthorizationCode(
+    override suspend fun googleAuthorizationCodeVerify(authorizationCode: AuthorizationCode): com.example.template.app.domain.entities.Result<String, Failure> {
+        return this.googleAuthenticationDataSource.getIdTokenByAuthorizationCode(
             authorizationCode = authorizationCode
         )
     }
@@ -55,10 +55,9 @@ class AuthenticationRepositoryImpl(
         credential: Credential,
     ): com.example.template.app.domain.entities.Result<Credential, Failure> {
         if (credential.userId.isNullOrEmpty()
-            || credential.secret.isNullOrEmpty()
             || credential.provider == null
         ) {
-            throw Exception("secret and provide can't null or empty")
+            throw Exception("userId and provide can't null or empty")
         }
         try {
             val savedCredential: Credential = transaction {

@@ -11,12 +11,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import template.composeapp.generated.resources.Res
-import template.composeapp.generated.resources.commonGenerationFlashcardsScreenLabel
-import template.composeapp.generated.resources.commonReviewFlashcardsScreenLabel
-import template.composeapp.generated.resources.commonTopicsScreenLabel
-import template.composeapp.generated.resources.signIn_title
-import template.composeapp.generated.resources.title_login
+import unify_auth.composeapp.generated.resources.*
 
 @Suppress("TRANSIENT_IS_REDUNDANT")
 @Serializable

@@ -1,0 +1,19 @@
+meta {
+  name: google copy
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{protocol}}{{domain}}/api/auth/login/google
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "idToken": null,
+    "authorizationCode": null,
+    "redirectUri": null
+  }
+}

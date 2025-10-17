@@ -1,14 +1,9 @@
 package com.example.template.app.ui.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
@@ -23,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -33,15 +27,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import compose.icons.EvaIcons
-import compose.icons.evaicons.Outline
-import compose.icons.evaicons.outline.Video
 import org.jetbrains.compose.resources.stringResource
-import template.composeapp.generated.resources.Res
-import template.composeapp.generated.resources.signIn_title
-import template.composeapp.generated.resources.signin_warning_password_level
-import template.composeapp.generated.resources.signin_warning_password_level_strong
-import template.composeapp.generated.resources.signin_warning_password_level_weak
+import unify_auth.composeapp.generated.resources.Res
+import unify_auth.composeapp.generated.resources.signin_warning_password_level
+import unify_auth.composeapp.generated.resources.signin_warning_password_level_strong
+import unify_auth.composeapp.generated.resources.signin_warning_password_level_weak
 
 @Composable
 fun AppPasswordTextField(

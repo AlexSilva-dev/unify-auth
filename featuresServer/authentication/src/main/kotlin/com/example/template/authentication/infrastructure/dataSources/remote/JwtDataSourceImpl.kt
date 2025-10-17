@@ -2,13 +2,12 @@ package com.example.template.authentication.infrastructure.dataSources.remote
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.example.template.authentication.JWT_AUDIENCE
-import com.example.template.authentication.JWT_ISSUER
-import com.example.template.authentication.JWT_SECRET
 import com.example.template.authentication.domain.entities.UserSession
 import com.example.template.authentication.infrastructure.dataSources.JwtDataSource
-import java.util.Date
-import java.util.UUID
+import com.example.template.authentication.utils.JWT_AUDIENCE
+import com.example.template.authentication.utils.JWT_ISSUER
+import com.example.template.authentication.utils.JWT_SECRET
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -17,7 +16,7 @@ class JwtDataSourceImpl(
     val jwtSecretKey: String? = JWT_SECRET,
     val jwtIssuer: String? = JWT_ISSUER,
     val jwtAudience: String? = JWT_AUDIENCE,
-): JwtDataSource {
+) : JwtDataSource {
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun buildToken(

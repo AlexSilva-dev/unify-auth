@@ -7,9 +7,6 @@ import com.example.template.app.navigations.NavControllerHolder
 import com.example.template.app.ui.viewModels.AppViewModel
 import com.example.template.authentication.ui.viewModels.LoginViewModel
 import com.example.template.authentication.ui.viewModels.SignUpViewModel
-import com.example.template.quiz.ui.viewModels.FlashcardHomeViewModel
-import com.example.template.quiz.ui.viewModels.FlashcardViewModel
-import com.example.template.quiz.ui.viewModels.TopicsViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -23,24 +20,6 @@ val moduleCompose: Module = module {
         )
     }
 
-    viewModel {
-        FlashcardHomeViewModel(
-            iaGenerateQuizzesUseCase = get()
-        )
-    }
-
-    viewModel {
-        TopicsViewModel(
-            getAllTopicsUseCase = get(),
-            authNavigationHandler = get()
-        )
-    }
-
-    viewModel {
-        FlashcardViewModel(
-            getQuizzesByTopic = get()
-        )
-    }
 
     viewModel {
         SignUpViewModel(

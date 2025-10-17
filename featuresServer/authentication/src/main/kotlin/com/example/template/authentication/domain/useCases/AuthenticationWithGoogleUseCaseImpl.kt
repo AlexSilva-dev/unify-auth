@@ -1,10 +1,8 @@
 package com.example.template.authentication.domain.useCases
 
-import com.example.template.authentication.domain.entities.AuthenticationWithGoogleUseCaseResult
-import com.example.template.authentication.domain.entities.AuthorizationCode
-import com.example.template.authentication.domain.entities.Credential
-import com.example.template.authentication.domain.entities.UserInfo
-import com.example.template.authentication.domain.entities.UserSession
+import com.example.template.app.domain.entities.Failure
+import com.example.template.app.domain.entities.Result
+import com.example.template.authentication.domain.entities.*
 import com.example.template.authentication.domain.ports.AuthenticationRepository
 import com.example.template.authentication.domain.useCases.interfaces.AuthenticationWithGoogleUseCase
 import com.example.template.user.domain.entities.User
@@ -15,9 +13,37 @@ class AuthenticationWithGoogleUseCaseImpl(
     private val authenticationRepository: AuthenticationRepository,
     private val userRepository: UserRepository,
 ) : AuthenticationWithGoogleUseCase {
-    override suspend fun execute(token: String): AuthenticationWithGoogleUseCaseResult {
+    override suspend fun execute(googleProviderRequest: GoogleProviderRequest): AuthenticationWithGoogleUseCaseResult {
+        var idToken: String? = googleProviderRequest.idToken
+        if (!googleProviderRequest.authorizationCode.isNullOrEmpty()) {
+            if (googleProviderRequest.redirectUri.isNullOrEmpty()) return AuthenticationWithGoogleUseCaseResult.InvalidRedirectUrl
+
+            val result: Result<String, Failure> =
+                this.authenticationRepository.googleAuthorizationCodeVerify(
+                    authorizationCode = AuthorizationCode(
+                        authorizationCode = googleProviderRequest.authorizationCode!!,
+                        url = googleProviderRequest.redirectUri!!
+                    )
+                )
+            if (result is Result.Failure) {
+                return AuthenticationWithGoogleUseCaseResult.GoogleUserNotFound
+            }
+            if (result is Result.Success) {
+                idToken = result.data
+            }
+        }
+
+        if (idToken.isNullOrEmpty()) return AuthenticationWithGoogleUseCaseResult.UnknownError
+        val result: AuthenticationWithGoogleUseCaseResult = this.authenticationWithIdToken(
+            idToken = idToken
+        )
+
+        return result
+    }
+
+    suspend fun authenticationWithIdToken(idToken: String): AuthenticationWithGoogleUseCaseResult {
         val userInfo: UserInfo? = this.authenticationRepository.googleTokenVerify(
-            token = token
+            token = idToken
         )
         if (userInfo == null) return AuthenticationWithGoogleUseCaseResult.InvalidToken
 
@@ -35,25 +61,6 @@ class AuthenticationWithGoogleUseCaseImpl(
         )
     }
 
-    override suspend fun execute(authorizationCode: AuthorizationCode): AuthenticationWithGoogleUseCaseResult {
-        val userInfo: UserInfo? = this.authenticationRepository.googleAuthorizationCodeVerify(
-            authorizationCode = authorizationCode
-        )
-        if (userInfo == null) return AuthenticationWithGoogleUseCaseResult.InvalidToken
-
-        val user = this.getUser(
-            userInfo = userInfo
-        )
-        if (user == null) {
-            return this.register(
-                userInfo
-            )
-        }
-
-        return this.createSessionForRegisteredUser(
-            user = user,
-        )
-    }
 
     @OptIn(ExperimentalUuidApi::class)
     private suspend fun getUser(userInfo: UserInfo): User? {
@@ -70,7 +77,7 @@ class AuthenticationWithGoogleUseCaseImpl(
 
     private suspend fun register(
         userInfo: UserInfo,
-    ): AuthenticationWithGoogleUseCaseResult.UserNotRegistered {
+    ): AuthenticationWithGoogleUseCaseResult {
         try {
             val user: User = this.userRepository.registerUser(
                 user = User(
@@ -79,11 +86,11 @@ class AuthenticationWithGoogleUseCaseImpl(
                     profilePictureUrl = userInfo.profilePictureUrl,
                 )
             )
-            if (user.id == null) throw Exception("User id cannot be null")
+            if (user.id == null) return AuthenticationWithGoogleUseCaseResult.UnknownError
 
             val credential: Credential = Credential(
                 userId = user.id,
-                provider = userInfo.provider,
+                provider = AuthenticationCredentialsProvider.GOOGLE,
                 providerId = userInfo.providerId,
                 secret = userInfo.secret,
             )
@@ -101,14 +108,14 @@ class AuthenticationWithGoogleUseCaseImpl(
                 userSession = userSession
             )
         } catch (e: Exception) {
-            throw Exception("Error registering user")
+            return AuthenticationWithGoogleUseCaseResult.UnknownError
         }
     }
 
     private suspend fun createSessionForRegisteredUser(
         user: User,
-    ): AuthenticationWithGoogleUseCaseResult.Success {
-        if (user.id.isNullOrEmpty()) throw Exception("User id cannot be null")
+    ): AuthenticationWithGoogleUseCaseResult {
+        if (user.id.isNullOrEmpty()) return AuthenticationWithGoogleUseCaseResult.UnknownError
         val userSession: UserSession = this.authenticationRepository
             .createUserSession(
                 userId = user.id!!

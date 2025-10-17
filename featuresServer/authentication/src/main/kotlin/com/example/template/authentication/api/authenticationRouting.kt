@@ -1,58 +1,43 @@
 package com.example.template.authentication.api
 
 import com.example.template.authentication.api.controllers.AuthenticationController
-import io.ktor.server.application.Application
-import io.ktor.server.routing.post
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
+import io.ktor.server.application.*
+import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Application.authenticationRouting(string: String, function: () -> Unit) {
-    val authenticationController by inject<AuthenticationController>()
-
-    routing(
-
+fun Route.authenticationRouting(authenticationController: AuthenticationController) {
+    route(
+        path = "/auth"
     ) {
+
         route(
-            path = "/auth"
+            path = "/login"
         ) {
-
             route(
-                path = "/login"
+                path = "/refresh-token"
             ) {
-                route(
-                    path = "/refresh-token"
-                ) {
-                    post {
-                        authenticationController.refreshToken(call)
-                    }
-                }
-
-                route(
-                    path = "/google/token"
-                ) {
-                    post {
-                        authenticationController.tokenAuthenticationWithGoogle(call)
-                    }
-                }
-
-                route(
-                    path = "/google/authorization-code"
-                ) {
-                    post {
-                        authenticationController.codeAuthenticationWithGoogle(call)
-                    }
+                post {
+                    authenticationController.refreshToken(call)
                 }
             }
 
             route(
-                path = "signup"
+                path = "/google"
             ) {
                 post {
-                    authenticationController.signUp(call)
+                    authenticationController.tokenAuthenticationWithGoogle(call)
                 }
             }
 
         }
+
+        route(
+            path = "signup"
+        ) {
+            post {
+                authenticationController.signUp(call)
+            }
+        }
+
     }
 }

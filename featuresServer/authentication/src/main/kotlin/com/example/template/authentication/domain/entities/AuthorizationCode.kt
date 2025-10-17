@@ -1,6 +1,6 @@
 package com.example.template.authentication.domain.entities
 
 data class AuthorizationCode(
-    val token: String,
+    val authorizationCode: String,
     val url: String,
 )

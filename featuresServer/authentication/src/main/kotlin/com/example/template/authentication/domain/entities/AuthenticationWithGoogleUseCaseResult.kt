@@ -3,7 +3,7 @@ package com.example.template.authentication.domain.entities
 sealed class AuthenticationWithGoogleUseCaseResult {
     data class Success(
         val userSession: UserSession,
-    ): AuthenticationWithGoogleUseCaseResult()
+    ) : AuthenticationWithGoogleUseCaseResult()
 
     /**
      * O token é inválido ou expirado
@@ -21,4 +21,8 @@ sealed class AuthenticationWithGoogleUseCaseResult {
      * Erro inesperado
      */
     object UnknownError : AuthenticationWithGoogleUseCaseResult()
+
+    object InvalidRedirectUrl : AuthenticationWithGoogleUseCaseResult()
+
+    object GoogleUserNotFound : AuthenticationWithGoogleUseCaseResult()
 }

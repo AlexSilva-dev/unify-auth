@@ -13,16 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navDeepLink
-import androidx.navigation.toRoute
 import com.example.template.app.ui.layouts.CleanLayout
-import com.example.template.app.ui.layouts.MainLayout
-import com.example.template.authentication.ui.screens.AuthenticatingScreen
 import com.example.template.authentication.ui.screens.LoginScreen
 import com.example.template.authentication.ui.screens.SignUpScreen
-import com.example.template.quiz.ui.screens.FlashcardGenerationScreen
-import com.example.template.quiz.ui.screens.FlashcardScreen
-import com.example.template.quiz.ui.screens.TopicsScreen
 import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -65,49 +58,6 @@ fun AppNavigation(
             .fillMaxSize()
             .padding(0.dp)
     ) {
-
-        composable(route = Screen.FlashcardGeneration.route) {
-            MainLayout(
-                onNavigate = onNavigate,
-                currentRoute = currentRoute
-            ) {
-                FlashcardGenerationScreen(
-                    onNavigateToTopics = {
-                        navController.navigate(
-                            route = Screen.Topics.route
-                        )
-                    }
-                )
-            }
-        }
-
-        composable(
-            route = Screen.Topics.route
-        ) { backStackEntry ->
-            MainLayout(
-                onNavigate = onNavigate,
-                currentRoute = currentRoute
-            ) {
-                TopicsScreen(
-                    onNavegateToFlashcard = { id: String ->
-                        navController.navigate(Screen.FlashcardReview(id = id))
-                    }
-                )
-            }
-        }
-
-        composable<Screen.FlashcardReview>(
-        ) { backStackEntry ->
-            val id: String = backStackEntry.toRoute<Screen.FlashcardReview>().id
-            MainLayout(
-                onNavigate = onNavigate,
-                currentRoute = currentRoute
-            ) {
-                FlashcardScreen(
-                    idTopic = id
-                )
-            }
-        }
 
         composable(
             route = Screen.SignIn.route

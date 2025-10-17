@@ -3,16 +3,7 @@ package com.example.template.authentication.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TooltipState
-import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,11 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.template.app.ui.components.AppButton
-import com.example.template.app.ui.components.AppPasswordTextField
-import com.example.template.app.ui.components.AppSurface
-import com.example.template.app.ui.components.AppText
-import com.example.template.app.ui.components.AppTextField
+import com.example.template.app.ui.components.*
 import com.example.template.app.ui.viewModels.BaseState
 import com.example.template.authentication.ui.viewModels.SignUpViewModel
 import compose.icons.EvaIcons
@@ -36,7 +23,8 @@ import compose.icons.evaicons.outline.ArrowBack
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import template.composeapp.generated.resources.*
+import unify_auth.composeapp.generated.resources.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
@@ -46,7 +34,7 @@ fun SignUpScreen(
     // O estado do ViewModel é a única fonte da verdade.
     val signUpViewModelData by signUpViewModel.signInViewModelData.collectAsState()
     val tooltipState: TooltipState = rememberTooltipState()
-    
+
     LaunchedEffect(signUpViewModelData.signInState) {
         when (signUpViewModelData.signInState) {
             is BaseState.Success -> {

@@ -10,8 +10,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
-import template.composeapp.generated.resources.Res
-import template.composeapp.generated.resources.google_brand_web_dark_rd
+import unify_auth.composeapp.generated.resources.Res
+import unify_auth.composeapp.generated.resources.google_brand_web_dark_rd
 
 @Composable
 fun GoogleButton(

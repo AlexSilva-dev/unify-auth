@@ -5,7 +5,7 @@ import com.example.template.authentication.domain.entities.AuthorizationCode
 
 fun AuthorizationCodeDto.toDomain(): AuthorizationCode {
     return AuthorizationCode(
-        token = this.token,
+        authorizationCode = this.token,
         url = this.redirectUrl
     )
 }

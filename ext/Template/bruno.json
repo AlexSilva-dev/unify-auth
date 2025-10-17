@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "Template",
+  "name": "Unify Auth",
   "type": "collection",
   "ignore": [
     "node_modules",

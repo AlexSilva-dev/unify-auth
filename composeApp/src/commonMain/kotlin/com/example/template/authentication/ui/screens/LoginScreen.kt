@@ -3,30 +3,11 @@ package com.example.template.authentication.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +17,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.template.app.App
 import com.example.template.app.ui.components.AppButton
 import com.example.template.app.ui.components.AppSurface
 import com.example.template.app.ui.components.AppText
@@ -46,13 +26,7 @@ import com.example.template.authentication.ui.viewModels.LoginViewModel
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import template.composeapp.generated.resources.Res
-import template.composeapp.generated.resources.background_login
-import template.composeapp.generated.resources.loginScreen_create_account
-import template.composeapp.generated.resources.loginScreen_page_create_account
-import template.composeapp.generated.resources.pass_textField_placeholder_login
-import template.composeapp.generated.resources.title_login
-import template.composeapp.generated.resources.user_textField_placeholder_login
+import unify_auth.composeapp.generated.resources.*
 
 @Composable
 fun LoginScreen(
@@ -165,22 +139,22 @@ fun LoginScreen(
                                 Res.string.loginScreen_create_account
                             ).trim()
                         )
-                            AppText(
-                                text = stringResource(
-                                    Res.string.loginScreen_page_create_account
-                                ).trim(),
-                                textAlign = TextAlign.Start,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .padding(5.dp, 0.dp)
-                                    .wrapContentWidth()
-                                    .clickable(
-                                        enabled = true,
-                                        onClick = {
-                                            onSignInNavigate()
-                                        }
-                                    )
-                            )
+                        AppText(
+                            text = stringResource(
+                                Res.string.loginScreen_page_create_account
+                            ).trim(),
+                            textAlign = TextAlign.Start,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(5.dp, 0.dp)
+                                .wrapContentWidth()
+                                .clickable(
+                                    enabled = true,
+                                    onClick = {
+                                        onSignInNavigate()
+                                    }
+                                )
+                        )
                     }
                     HorizontalDivider(
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
