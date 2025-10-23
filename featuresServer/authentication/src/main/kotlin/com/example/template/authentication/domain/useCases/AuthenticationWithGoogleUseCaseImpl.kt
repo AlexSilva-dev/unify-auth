@@ -4,6 +4,7 @@ import com.example.template.app.domain.entities.Failure
 import com.example.template.app.domain.entities.Result
 import com.example.template.authentication.domain.entities.*
 import com.example.template.authentication.domain.ports.AuthenticationRepository
+import com.example.template.authentication.domain.ports.TransactionManager
 import com.example.template.authentication.domain.useCases.interfaces.AuthenticationWithGoogleUseCase
 import com.example.template.user.domain.entities.User
 import com.example.template.user.domain.ports.UserRepository
@@ -12,6 +13,7 @@ import kotlin.uuid.ExperimentalUuidApi
 class AuthenticationWithGoogleUseCaseImpl(
     private val authenticationRepository: AuthenticationRepository,
     private val userRepository: UserRepository,
+    private val transactionManager: TransactionManager,
 ) : AuthenticationWithGoogleUseCase {
     override suspend fun execute(googleProviderRequest: GoogleProviderRequest): AuthenticationWithGoogleUseCaseResult {
         var idToken: String? = googleProviderRequest.idToken
@@ -26,6 +28,7 @@ class AuthenticationWithGoogleUseCaseImpl(
                     )
                 )
             if (result is Result.Failure) {
+                //
                 return AuthenticationWithGoogleUseCaseResult.GoogleUserNotFound
             }
             if (result is Result.Success) {
@@ -64,8 +67,9 @@ class AuthenticationWithGoogleUseCaseImpl(
 
     @OptIn(ExperimentalUuidApi::class)
     private suspend fun getUser(userInfo: UserInfo): User? {
-        val credential: Credential? = this.authenticationRepository.findCredentialsByGoogleId(
-            googleId = userInfo.providerId
+        val credential: Credential? = this.authenticationRepository.findByProvider(
+            provider = AuthenticationCredentialsProvider.GOOGLE,
+            providerId = userInfo.providerId
         )
         if (credential == null) return null
 
@@ -78,35 +82,44 @@ class AuthenticationWithGoogleUseCaseImpl(
     private suspend fun register(
         userInfo: UserInfo,
     ): AuthenticationWithGoogleUseCaseResult {
-        try {
-            val user: User = this.userRepository.registerUser(
-                user = User(
-                    fullName = userInfo.name,
-                    email = userInfo.email,
-                    profilePictureUrl = userInfo.profilePictureUrl,
+        return try {
+            this.transactionManager {
+
+                val user: User = this.userRepository.registerUser(
+                    user = User(
+                        fullName = userInfo.name,
+                        email = userInfo.email,
+                        profilePictureUrl = userInfo.profilePictureUrl,
+                    )
                 )
-            )
-            if (user.id == null) return AuthenticationWithGoogleUseCaseResult.UnknownError
+                if (user.id == null) return@transactionManager AuthenticationWithGoogleUseCaseResult.UnknownError
 
-            val credential: Credential = Credential(
-                userId = user.id,
-                provider = AuthenticationCredentialsProvider.GOOGLE,
-                providerId = userInfo.providerId,
-                secret = userInfo.secret,
-            )
-            this.authenticationRepository.saveCredentials(
-                credential = credential,
-            )
-
-            val userSession: UserSession = this.authenticationRepository
-                .createUserSession(
-                    userId = user.id!!
+                val credential: Credential = Credential(
+                    userId = user.id,
+                    provider = AuthenticationCredentialsProvider.GOOGLE,
+                    providerId = userInfo.providerId,
+                    secret = userInfo.secret,
                 )
 
+                val credentialNew: Result<Credential, Failure> = this.authenticationRepository.saveCredentials(
+                    credential = credential,
+                )
 
-            return AuthenticationWithGoogleUseCaseResult.UserNotRegistered(
-                userSession = userSession
-            )
+                if (credentialNew is Result.Failure) {
+                    this.userRepository.deleteById(user.id!!)
+                    return@transactionManager AuthenticationWithGoogleUseCaseResult.UnknownError
+                }
+
+                val userSession: UserSession = this.authenticationRepository
+                    .createUserSession(
+                        userId = user.id!!
+                    )
+
+
+                return@transactionManager AuthenticationWithGoogleUseCaseResult.UserNotRegistered(
+                    userSession = userSession
+                )
+            }
         } catch (e: Exception) {
             return AuthenticationWithGoogleUseCaseResult.UnknownError
         }

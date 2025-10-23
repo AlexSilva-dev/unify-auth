@@ -11,7 +11,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-fun Application.configureDatabasePlugin() {
+fun Application.configureDatabasePlugin(): Database {
     val driver = DATABASE_DRIVER
     val url = DATABASE_URL
     val user = DATABASE_USER
@@ -26,11 +26,12 @@ fun Application.configureDatabasePlugin() {
     ) {
         throw IllegalAccessException("Ambient variables not set")
     }
-    Database.connect(url, driver = driver, user = user, password = password)
+    val database: Database = Database.connect(url, driver = driver, user = user, password = password)
     transaction {
         SchemaUtils.create(
             UserSessionsTable,
             CredentialsTable,
         )
     }
+    return database
 }

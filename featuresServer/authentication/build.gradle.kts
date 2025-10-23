@@ -23,4 +23,13 @@ dependencies {
 
     implementation(projects.shared)
     implementation(project(":featuresServer:user"))
+
+    testImplementation(libs.test.mockk)
+    testImplementation(libs.test.coroutines)
+    testImplementation(libs.test.junit.jupiter.api)
+    testRuntimeOnly(libs.test.junit.jupiter.engine)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

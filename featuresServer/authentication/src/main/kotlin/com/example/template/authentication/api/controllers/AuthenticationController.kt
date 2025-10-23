@@ -7,9 +7,11 @@ import com.example.template.app.domain.entities.Failure
 import com.example.template.app.domain.entities.Result
 import com.example.template.authentication.api.dtos.GoogleProviderRequestDto
 import com.example.template.authentication.api.dtos.SignUpDataDto
+import com.example.template.authentication.api.dtos.mappers.TokenDto
 import com.example.template.authentication.api.dtos.mappers.toDomain
 import com.example.template.authentication.api.dtos.mappers.toDto
 import com.example.template.authentication.domain.entities.AuthenticationWithGoogleUseCaseResult
+import com.example.template.authentication.domain.entities.UserSession
 import com.example.template.authentication.domain.useCases.RefreshTokenUseCase
 import com.example.template.authentication.domain.useCases.RefreshTokenUseCaseResult
 import com.example.template.authentication.domain.useCases.SignUpUseCase
@@ -31,63 +33,79 @@ class AuthenticationController(
 ) {
     suspend fun tokenAuthenticationWithGoogle(call: RoutingCall) {
 
-        val googleProviderRequestDto: GoogleProviderRequestDto = call.receive<GoogleProviderRequestDto>()
-        if (
-            googleProviderRequestDto.idToken.isNullOrEmpty()
-            && (googleProviderRequestDto.redirectUri.isNullOrEmpty() && googleProviderRequestDto.authorizationCode.isNullOrEmpty())
-        ) {
-            call.respondNullable(
-                status = HttpStatusCode.BadRequest,
-                message = "Invalid request"
+        try {
+            val googleProviderRequestDto: GoogleProviderRequestDto = call.receive<GoogleProviderRequestDto>()
+            if (
+                googleProviderRequestDto.idToken.isNullOrEmpty()
+                && (googleProviderRequestDto.redirectUri.isNullOrEmpty() && googleProviderRequestDto.authorizationCode.isNullOrEmpty())
+            ) {
+                call.respondNullable(
+                    status = HttpStatusCode.BadRequest,
+                    message = "Invalid request"
+                )
+                return
+            }
+            val result: AuthenticationWithGoogleUseCaseResult = this.authenticationWithGoogleUseCase.execute(
+                googleProviderRequest = googleProviderRequestDto.toDomain()
             )
-            return
-        }
-        val result: AuthenticationWithGoogleUseCaseResult = this.authenticationWithGoogleUseCase.execute(
-            googleProviderRequest = googleProviderRequestDto.toDomain()
-        )
 
-        when (result) {
-            is AuthenticationWithGoogleUseCaseResult.InvalidToken -> {
-                call.respondNullable(
-                    status = HttpStatusCode.BadRequest,
-                    message = "Invalid token"
-                )
-            }
+            when (result) {
+                is AuthenticationWithGoogleUseCaseResult.InvalidToken -> {
+                    call.respondNullable(
+                        status = HttpStatusCode.BadRequest,
+                        message = "Invalid token"
+                    )
+                }
 
-            is AuthenticationWithGoogleUseCaseResult.UnknownError -> {
-                call.respondNullable(
-                    status = HttpStatusCode.InternalServerError,
-                    message = "Unknown error"
-                )
-            }
+                is AuthenticationWithGoogleUseCaseResult.UnknownError -> {
+                    call.respondNullable(
+                        status = HttpStatusCode.InternalServerError,
+                        message = "Unknown error"
+                    )
+                }
 
-            is AuthenticationWithGoogleUseCaseResult.UserNotRegistered -> {
-                call.respondNullable(
-                    status = HttpStatusCode.Created,
-                    message = result.userSession.toDto()
-                )
-            }
 
-            is AuthenticationWithGoogleUseCaseResult.InvalidRedirectUrl -> {
-                call.respondNullable(
-                    status = HttpStatusCode.BadRequest,
-                    message = "Invalid redirect url"
-                )
-            }
+                is AuthenticationWithGoogleUseCaseResult.InvalidRedirectUrl -> {
+                    call.respondNullable(
+                        status = HttpStatusCode.BadRequest,
+                        message = "Invalid redirect url"
+                    )
+                }
 
-            is AuthenticationWithGoogleUseCaseResult.GoogleUserNotFound -> {
-                call.respondNullable(
-                    status = HttpStatusCode.BadRequest,
-                    message = "Google user not found"
-                )
-            }
+                is AuthenticationWithGoogleUseCaseResult.GoogleUserNotFound -> {
+                    call.respondNullable(
+                        status = HttpStatusCode.BadRequest,
+                        message = "Google user not found"
+                    )
+                }
 
-            is AuthenticationWithGoogleUseCaseResult.Success -> {
-                call.respondNullable(
-                    status = HttpStatusCode.OK,
-                    message = result.userSession.toDto()
-                )
+                is AuthenticationWithGoogleUseCaseResult.UserNotRegistered -> {
+                    val userSession: UserSession = result.userSession
+                    call.respondNullable(
+                        status = HttpStatusCode.Created,
+                        message = TokenDto(
+                            accessToken = userSession.accessToken!!,
+                            refreshToken = userSession.refreshToken!!
+                        )
+                    )
+                }
+
+                is AuthenticationWithGoogleUseCaseResult.Success -> {
+                    val userSession: UserSession = result.userSession
+                    call.respondNullable(
+                        status = HttpStatusCode.OK,
+                        message = TokenDto(
+                            accessToken = userSession.accessToken!!,
+                            refreshToken = userSession.refreshToken!!
+                        )
+                    )
+                }
             }
+        } catch (e: Exception) {
+            call.respondNullable(
+                status = HttpStatusCode.InternalServerError,
+                message = "Internal server error"
+            )
         }
 
     }

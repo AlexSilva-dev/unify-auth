@@ -1,10 +1,7 @@
 package com.example.template.authentication.infrastructure.repositories
 
 import com.example.template.app.domain.entities.Failure
-import com.example.template.authentication.domain.entities.AuthorizationCode
-import com.example.template.authentication.domain.entities.Credential
-import com.example.template.authentication.domain.entities.UserInfo
-import com.example.template.authentication.domain.entities.UserSession
+import com.example.template.authentication.domain.entities.*
 import com.example.template.authentication.domain.ports.AuthenticationRepository
 import com.example.template.authentication.infrastructure.dataSources.GoogleAuthenticationDataSource
 import com.example.template.authentication.infrastructure.dataSources.JwtDataSource
@@ -39,10 +36,11 @@ class AuthenticationRepositoryImpl(
         )
     }
 
-    override suspend fun findCredentialsByGoogleId(googleId: String): Credential? {
+    override suspend fun findByProvider(provider: AuthenticationCredentialsProvider, providerId: String): Credential? {
         val credential: Credential? = transaction {
             val credentialsEntityList = CredentialsDao.find {
-                CredentialsTable.providerId eq googleId
+                CredentialsTable.providerId eq providerId
+                CredentialsTable.provider eq provider.name
             }
             val credentialsEntity = credentialsEntityList.firstOrNull()
             credentialsEntity?.toDomain()

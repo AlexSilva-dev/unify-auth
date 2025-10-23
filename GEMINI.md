@@ -150,9 +150,45 @@ ser seguido:
       `{"issue_id": "ID", "description": "texto"}`.
     - **Caracteres Especiais:** Dentro da string de descrição no JSON, caracteres especiais como quebras de linha devem
       ser escapados (ex: `\n`), e aspas duplas devem ser escapadas (ex: `\"`). A formatação correta é crucial.
+      Este é um padrão amplamente utilizado que define um conjunto de regras para as mensagens de commit, tornando-as
+      mais significativas para humanos e máquinas. A estrutura básica é:
+
+```plain
+<tipo>[escopo opcional]: <descrição>
+
+[corpo opcional]
+
+[rodapé opcional]
+```
+
+* **`<tipo>`\****:** Um substantivo que descreve a natureza da alteração. Alguns tipos comuns:
+    * `feat`: Adiciona um novo recurso.
+    * `fix`: Corrige um bug.
+    * `docs`: Altera a documentação.
+    * `style`: Altera o estilo do código (formatação, espaçamento, etc.).
+    * `refactor`: Refatora o código (sem adicionar novos recursos ou corrigir bugs).
+    * `test`: Adiciona ou modifica testes.
+    * `chore`: Tarefas de manutenção, build ou configuração.
+    * `build`: Alterações no sistema de build ou dependências externas.
+    * `ci`: Alterações na integração contínua.
+    * `perf`: Melhora o desempenho.
+* **`[escopo opcional]`\****:** Um escopo opcional que especifica a parte do código afetada pela alteração (ex:
+  `feat(login):`, `fix(cadastro):`).
+* **`<descrição>`\****:** Uma breve descrição da alteração, usando imperativo presente (ex: "Adiciona tela de login", "
+  Corrige erro de digitação").
+* **`[corpo opcional]`\****:** Um corpo opcional com mais detalhes sobre a alteração. Deve ser separado da descrição por
+  uma linha em branco.
+* **`[rodapé opcional]`\****:** Um rodapé opcional para informações adicionais, como referências a issues (ex:
+  `Fixes #123`).
 
 ## Instrução para comunicação comigo:
 
-- Sempre leia o arquivo no qual eu citei, busque ele e leia para entender o cenário, e se for necessário leia os
-  relacionados para entender como tudo ta funcionando para não da resposta inútes.
-- De preferencia a me explicar e mostrar o código e não para fazer ele.
+- **Busca e Leitura Proativa de Código (Otimização de Tokens e Contexto Abrangente):** Quando o usuário mencionar um
+  código, funcionalidade, classe, método ou qualquer parte do projeto, mesmo sem citar explicitamente o caminho do
+  arquivo, o assistente deve proativamente usar as ferramentas de busca (`search_file_content`, `glob`) para localizar o
+  código relevante. Priorizar métodos que consumam o menor número de tokens possível. Em seguida, usar `read_file` para
+  entender o contexto. É crucial ler não apenas o arquivo diretamente mencionado, mas também **arquivos relacionados**
+  que sejam necessários para uma compreensão completa do código e de seu funcionamento. Esta leitura deve ser feita pelo
+  menos uma vez para estabelecer o contexto inicial, não sendo necessário reler o mesmo conteúdo a cada interação, a
+  menos que haja indicação de mudança ou necessidade de aprofundamento.
+- De preferencia a explicar e mostrar o código, e não a fazê-lo diretamente.
